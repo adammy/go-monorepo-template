@@ -1,0 +1,57 @@
+# Info here: https://chemidy.medium.com/create-the-smallest-and-secured-golang-docker-image-based-on-scratch-4752223b7324
+
+############################
+# STEP 1 build executable binary
+############################
+FROM golang:1.19-alpine as builder
+
+# Install git, ssl ca certs.
+# Git is required for fetching the dependencies.
+# SSL ca certs required to call HTTPS endpoints.
+RUN apk update \
+    && apk add --no-cache git ca-certificates \
+    && update-ca-certificates
+
+# Create an unprivileged user and group.
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "10001" \
+    "appuser"
+
+# Copy app.
+WORKDIR /go/src/{{.moduleName}}
+COPY . .
+
+# Fetch dependencies.
+RUN go mod download
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-w -s" -o /{{.suiteName}}-{{.name}}-svc cmd/{{.name}}/main.go
+
+############################
+# STEP 2 build a small image
+############################
+FROM scratch
+
+# Import the ca-certificate.crt from the builder.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Import the user and group files from the builder.
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+
+# Copy the binary and it's dependencies.
+COPY --from=builder --chown=appuser:appuser /{{.suiteName}}-{{.name}}-svc /{{.suiteName}}-{{.name}}-svc
+COPY --from=builder --chown=appuser:appuser /go/src/{{.moduleName}}/assets ./assets
+COPY --from=builder --chown=appuser:appuser /go/src/{{.moduleName}}/configs ./configs
+
+# Use an unprivileged user.
+USER appuser:appuser
+
+# Run the binary.
+EXPOSE 8080
+ENTRYPOINT ["/{{.suiteName}}-{{.name}}-svc"]

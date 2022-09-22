@@ -1,0 +1,11 @@
+// Server represents all server handlers.
+type ServerInterface interface {
+{{range .}}// {{.Spec.Description }}
+// ({{.Method}} {{.Path}})
+{{.OperationId}}(w http.ResponseWriter, r *http.Request{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}})
+
+{{end}}
+
+// Start the server.
+Start() error
+}

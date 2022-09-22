@@ -1,0 +1,107 @@
+run:
+  skip-files:
+    # - pkg/myfile.go
+
+# https://golangci-lint.run/usage/linters/
+linters:
+  enable:
+    # Defaults
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+
+    # Our opt-ins
+    - asciicheck
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - godox
+    - goerr113
+    - gofmt
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - grouper
+    - importas
+    - lll
+    - maintidx
+    - misspell
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nosprintfhostport
+    - paralleltest
+    - prealloc
+    - predeclared
+    - stylecheck
+    - tagliatelle
+    - testpackage
+    - unconvert
+    - unparam
+    - varnamelen
+    - whitespace
+    - wrapcheck
+
+linters-settings:
+
+  decorder:
+    disable-dec-order-check: false
+
+  funlen:
+    lines: 80
+    statements: 40
+
+  grouper:
+    const-require-single-const: true
+    const-require-grouping: true
+    import-require-single-import: true
+    import-require-grouping: true
+    var-require-single-var: true
+    var-require-grouping: true
+
+  misspell:
+    locale: US
+
+  tagliatelle:
+    case:
+      use-field-name: true
+
+  varnamelen:
+    ignore-names:
+      - tc
+      - i
+      - id
+      - ID
+      - fn
+      - x
+      - "y"
+    ignore-decls:
+      - ip string
+      - ok bool
+      - w http.ResponseWriter
+      - r *http.Request
+      - wg sync.WaitGroup
+      - wg *sync.WaitGroup

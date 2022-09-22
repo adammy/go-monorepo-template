@@ -1,0 +1,10 @@
+package {{.name}}
+
+import (
+	"{{.moduleName}}/pkg/httpapi"
+)
+
+// Config defines configuration for the Server.
+type Config struct {
+	httpapi.ServerConfig `mapstructure:"server"`
+}

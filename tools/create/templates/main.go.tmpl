@@ -1,0 +1,18 @@
+package main
+
+import (
+	"{{.moduleName}}/pkg/{{.name}}"
+	"{{.moduleName}}/pkg/httpapi"
+)
+
+func main() {
+	config, err := httpapi.LoadConfig[{{.name}}.Config](httpapi.ConfigPath, "{{.name}}")
+	if err != nil {
+		panic(err)
+	}
+
+	server := {{.name}}.NewServer(config)
+	if err := server.Start(); err != nil {
+		panic(err)
+	}
+}
