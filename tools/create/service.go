@@ -130,7 +130,7 @@ func (svc *Service) OpenAPI() error {
 	cfg := &TmplCfg{
 		Name: "openapi.yml.tmpl",
 		Tmpl: "tools/create/templates/openapi.yml.tmpl",
-		Dir:  "api",
+		Dir:  "api/openapi",
 		File: fmt.Sprintf("%s.yml", svc.Name),
 		Data: svc.TmplData,
 	}
@@ -146,6 +146,38 @@ func (svc *Service) OpenAPI() error {
 func (svc *Service) Server() error {
 	cfgs := []*TmplCfg{
 		{
+			Name: "generate.go.tmpl",
+			Tmpl: "tools/create/templates/generate.go.tmpl",
+			Dir:  svc.PkgDir,
+			File: "generate.go",
+			Data: svc.TmplData,
+		},
+	}
+
+	if err := Files(cfgs); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("go", "generate")
+	cmd.Dir = fmt.Sprintf("pkg/%s", svc.Name)
+	if _, err := cmd.Output(); err != nil {
+		return fmt.Errorf("cmd output command failed: %w", err)
+	}
+
+	return nil
+}
+
+// ServerStub generates an initial implementation for a server from an OpenAPI spec.
+func (svc *Service) ServerStub() error {
+	cfgs := []*TmplCfg{
+		{
+			Name: "doc.go.tmpl",
+			Tmpl: "tools/create/templates/doc.go.tmpl",
+			Dir:  svc.PkgDir,
+			File: "doc.go",
+			Data: svc.TmplData,
+		},
+		{
 			Name: "main.go.tmpl",
 			Tmpl: "tools/create/templates/main.go.tmpl",
 			Dir:  svc.CmdDir,
@@ -153,17 +185,10 @@ func (svc *Service) Server() error {
 			Data: svc.TmplData,
 		},
 		{
-			Name: "generate.go.tmpl",
-			Tmpl: "tools/create/templates/generate.go.tmpl",
+			Name: "generate.stub.go.tmpl",
+			Tmpl: "tools/create/templates/generate.stub.go.tmpl",
 			Dir:  svc.PkgDir,
-			File: "generate.go",
-			Data: svc.TmplData,
-		},
-		{
-			Name: "server.go.tmpl",
-			Tmpl: "tools/create/templates/server.go.tmpl",
-			Dir:  svc.PkgDir,
-			File: "server.go",
+			File: "generate.stub.go",
 			Data: svc.TmplData,
 		},
 		{
@@ -187,20 +212,13 @@ func (svc *Service) Server() error {
 			File: fmt.Sprintf("%s.yml", svc.Name),
 			Data: svc.TmplData,
 		},
-		{
-			Name: "doc.go.tmpl",
-			Tmpl: "tools/create/templates/doc.go.tmpl",
-			Dir:  svc.PkgDir,
-			File: "doc.go",
-			Data: svc.TmplData,
-		},
 	}
 
 	if err := Files(cfgs); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("go", "generate")
+	cmd := exec.Command("go", "generate", "-tags", "stub")
 	cmd.Dir = fmt.Sprintf("pkg/%s", svc.Name)
 	if _, err := cmd.Output(); err != nil {
 		return fmt.Errorf("cmd output command failed: %w", err)

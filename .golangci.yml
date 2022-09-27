@@ -1,5 +1,6 @@
 run:
   skip-files:
+    - generate.go
     # - pkg/myfile.go
 
 # https://golangci-lint.run/usage/linters/

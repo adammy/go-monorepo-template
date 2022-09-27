@@ -19,8 +19,12 @@ type ServerConfig struct {
 	// Port defines the port the server runs on.
 	Port int `mapstructure:"port"`
 
-	// RequestTimeout defines the duration for requests to timeout in nanoseconds.
-	RequestTimeout time.Duration `mapstructure:"request_timeout"`
+	// RequestContextCancelTimeout defines the duration for requests to timeout in nanoseconds.
+	// If this time is met, the request context will be canceled and a HTTP 504 will be sent to the client.
+	RequestContextCancelTimeout time.Duration `mapstructure:"request_context_cancel_timeout"`
+
+	// ReadHeaderTimeout defines the duration for the amount of time allowed to read headers.
+	ReadHeaderTimeout time.Duration `mapstructure:"read_header_timeout"`
 
 	// Logger defines configuration for the HTTP logger.
 	Logger LoggerConfig `mapstructure:"logger"`

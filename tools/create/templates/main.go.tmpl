@@ -6,12 +6,14 @@ import (
 )
 
 func main() {
-	config, err := httpapi.LoadConfig[{{.name}}.Config](httpapi.ConfigPath, "{{.name}}")
+	cfg, err := httpapi.LoadConfig[{{.name}}.Config](httpapi.ConfigPath, "{{.name}}")
 	if err != nil {
 		panic(err)
 	}
 
-	server := {{.name}}.NewServer(config)
+	server := {{.name}}.NewServer(
+		{{.name}}.WithConfig(cfg),
+	)
 	if err := server.Start(); err != nil {
 		panic(err)
 	}

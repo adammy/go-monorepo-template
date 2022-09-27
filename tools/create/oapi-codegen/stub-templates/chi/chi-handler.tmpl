@@ -1,42 +1,62 @@
-var _ ServerInterface = (*Server)(nil)
-
 type Server struct {
-	config  *Config
-	router  *chi.Mux
+	Config  *Config
+	Router  *chi.Mux
 }
 
-func NewServer(config *Config) *Server {
-	return &Server{
-		config:  config,
-		router:  chi.NewRouter(),
+var (
+	_ ServerInterface = (*Server)(nil)
+)
+
+func NewServer(options ...func(*Server)) *Server {
+	server := &Server{
+		Router: chi.NewRouter(),
+	}
+
+	for _, o := range options {
+		o(server)
+	}
+
+	return server
+}
+
+func WithConfig(cfg *Config) func(*Server) {
+	return func(server *Server) {
+		server.Config = cfg
 	}
 }
 
 func (s *Server) Start() error {
-	openapi, err := GetSwagger()
+	api, err := GetSwagger()
 	if err != nil {
 		return err
 	}
-	openapi.Servers = nil
+	api.Servers = nil
 
-	logger := httpapi.NewLogger(s.config.Logger)
+	logger := httpapi.NewLogger(s.Config.Logger)
 
-	s.router.Use(oapimiddleware.OapiRequestValidatorWithOptions(openapi, &oapimiddleware.Options{
+	s.Router.Use(oapimiddleware.OapiRequestValidatorWithOptions(api, &oapimiddleware.Options{
 		ErrorHandler: func(w http.ResponseWriter, message string, statusCode int) {
-			httpapi.SendErrorJSON(w, statusCode, errors.New(message))
+			_ = httpapi.SendErrorJSON(w, statusCode, fmt.Errorf("%w: %s", openapi.ErrValidation, message))
 		},
 	}))
-	s.router.Use(middleware.RequestID)
-	s.router.Use(middleware.RealIP)
-	s.router.Use(middleware.Recoverer)
-	s.router.Use(middleware.Timeout(s.config.RequestTimeout))
-	s.router.Use(httplog.RequestLogger(logger))
+	s.Router.Use(middleware.RequestID)
+	s.Router.Use(middleware.RealIP)
+	s.Router.Use(middleware.Recoverer)
+	s.Router.Use(middleware.Timeout(s.Config.RequestContextCancelTimeout))
+	s.Router.Use(httplog.RequestLogger(logger))
 
-	HandlerFromMux(s, s.router)
+	HandlerFromMux(s, s.Router)
 
-	logger.Info().Msgf("server starting on port %d", s.config.Port)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.config.Port), s.router); err != nil {
-		return err
+	logger.Info().Msgf("server starting on port %d", s.Config.Port)
+
+	server := &http.Server{
+		Addr:              fmt.Sprintf(":%d", s.Config.Port),
+		Handler:           s.Router,
+		ReadHeaderTimeout: s.Config.ReadHeaderTimeout,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		return fmt.Errorf("server listen and serve failed: %w", err)
 	}
 
 	return nil
@@ -45,6 +65,6 @@ func (s *Server) Start() error {
 
 {{range .}}
 func (s *Server) {{.OperationId}}(w http.ResponseWriter, r *http.Request{{range .PathParams }}, {{.ParamName}} {{.Schema.GoType}}{{end}}) {
-	// implement me
+	_ = httpapi.SendErrorJSONWithRequest(w, r, http.StatusNotImplemented, httpapi.ErrNotImplemented)
 }
 {{end}}

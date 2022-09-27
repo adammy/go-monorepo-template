@@ -6,8 +6,8 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/v1
-  - url: https://{{.name}}.{{.rootURL}}/v1
+  - url: http://localhost:8080
+  - url: https://{{.name}}.{{.rootURL}}
 
 paths:
   /hello/{name}:
@@ -36,7 +36,7 @@ components:
   schemas:
     Hello:
       type: object
-      description: An object description.
+      description: Hello contains a hello-related message.
       required:
         - id
         - message

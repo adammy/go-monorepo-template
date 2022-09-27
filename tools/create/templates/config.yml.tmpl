@@ -1,9 +1,10 @@
 server:
   port: 8080
-  request_timeout: 7
+  request_context_cancel_timeout: 7000000000 # 7 seconds: 7 * 1000 * 1000 * 1000
+  read_header_timeout: 3000000000 # 3 seconds: 3 * 1000 * 1000 * 1000
   logger:
     json: false
-    app_name: adammy-{{.name}}
+    app_name: {{.suiteName}}-{{.name}}
     app_version: 1.0.0
     env_name: local
     level: info
