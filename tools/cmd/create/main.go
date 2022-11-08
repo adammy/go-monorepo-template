@@ -27,21 +27,27 @@ func main() {
 	)
 
 	templateFuncs := map[string]func() error{
-		"OpenAPI spec": func() error {
+		createcli.OpenAPIPrompt: func() error {
 			if err := svc.OpenAPI(); err != nil {
 				return fmt.Errorf("create open api failed: %w", err)
 			}
 			return nil
 		},
-		"Generated types, client, and server interface": func() error {
+		createcli.ServerPrompt: func() error {
 			if err := svc.Server(); err != nil {
 				return fmt.Errorf("create server failed: %w", err)
 			}
 			return nil
 		},
-		"Server implementation stub": func() error {
+		createcli.ServerStubPrompt: func() error {
 			if err := svc.ServerStub(); err != nil {
 				return fmt.Errorf("create server stub failed: %w", err)
+			}
+			return nil
+		},
+		createcli.DeletePrompt: func() error {
+			if err := svc.Delete(); err != nil {
+				return fmt.Errorf("delete failed: %w", err)
 			}
 			return nil
 		},

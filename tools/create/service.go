@@ -227,6 +227,16 @@ func (svc *Service) ServerStub() error {
 	return nil
 }
 
+// Delete will delete all associated files with a service.
+func (svc *Service) Delete() error {
+	cmd := exec.Command("rm", fmt.Sprintf("api/openapi/%s.yml", svc.Name))
+	if _, err := cmd.Output(); err != nil {
+		return fmt.Errorf("cmd output command failed: %w", err)
+	}
+
+	return nil
+}
+
 // fetchModuleName gets the root module name from the go.mod file, i.e.,
 // "github.com/adammy/go-monorepo-template".
 func fetchModuleName() (string, error) {

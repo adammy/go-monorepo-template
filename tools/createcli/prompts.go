@@ -7,16 +7,17 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
+// PromptCreateType runs the first prompt in the sequence and asks what to create.
 func PromptCreateType() (string, error) {
 	types := []createType{
 		{
-			Name: "OpenAPI spec",
+			Name: OpenAPIPrompt,
 			Creates: []string{
 				"OpenAPI YML spec file, where you can define the API you are creating",
 			},
 		},
 		{
-			Name: "Generated types, client, and server interface",
+			Name: ServerPrompt,
 			Creates: []string{
 				"Generated types from the components in the OpenAPI spec",
 				"Generated HTTP client from the OpenAPI spec",
@@ -24,7 +25,7 @@ func PromptCreateType() (string, error) {
 			},
 		},
 		{
-			Name: "Server implementation stub",
+			Name: ServerStubPrompt,
 			Creates: []string{
 				"HTTP Chi server that implements the server interface",
 				"Doc file to document the package",
@@ -33,6 +34,10 @@ func PromptCreateType() (string, error) {
 				"Default config YML file",
 				"Dockerfile",
 			},
+		},
+		{
+			Name:    DeletePrompt,
+			Creates: []string{},
 		},
 	}
 
@@ -62,6 +67,7 @@ func PromptCreateType() (string, error) {
 	return types[i].Name, nil
 }
 
+// PromptServiceName runs a prompt and asks for the name of the service to be created.
 func PromptServiceName() (string, error) {
 	templates := &promptui.PromptTemplates{
 		Prompt:  "{{ . }}",
